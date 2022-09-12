@@ -1,0 +1,64 @@
+_schema-version: "3.2"
+ID: vuu7hc
+version: 0.0.1
+modules:
+- name: vuu7hc-approuter
+  type: approuter.nodejs
+  path: vuu7hc-approuter
+  requires:
+  - name: vuu7hc_html_repo_runtime
+  - name: xsuaa-piperpurchaseorder
+    group: destinations
+    properties: 
+      name: "backend_service"
+      url: "https://piperpurchaseorderservice.cfapps.eu10.hana.ondemand.com"
+      forwardAuthToken: true
+  parameters:
+    disk-quota: 256M
+    memory: 256M
+    host: vuu7hc
+- name: vuu7hc_ui_deployer
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: vuu7hc_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - ui-content.zip
+      name: ui
+      target-path: resources/
+- name: ui
+  type: html5
+  path: ui
+  build-parameters:
+    builder: custom
+    commands:
+    - npm run build
+    supported-platforms: []
+resources:
+- name: vuu7hc_html_repo_runtime
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-runtime
+- name: vuu7hc_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-host
+- name: xsuaa-piperpurchaseorder
+  type: org.cloudfoundry.existing-service
+  # parameters:
+  #   path: ./xs-security.json
+  #   service: xsuaa
+  #   service-name: xsuaa-piperpurchaseorder
+  #   service-plan: application
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm install
